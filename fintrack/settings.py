@@ -113,6 +113,7 @@ CORS_ALLOWED_ORIGINS = config(
     cast=lambda v: [origin.strip() for origin in v.split(',') if origin.strip()]
 )
 
+AUTH_USER_MODEL = 'users.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
