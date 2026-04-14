@@ -3,6 +3,7 @@ from openai import OpenAI
 from django.conf import settings
 from rest_framework import viewsets
 from django.db.models import F, Sum
+from datetime import datetime
 from .filters import TransactionFilter
 from .models import Category, Transaction
 from rest_framework.response import Response
@@ -47,22 +48,40 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 # ViewSet for calculating transaction summary
 class TransactionSummaryViewSet(viewsets.ViewSet):
-    permission_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        transactions = Transaction.objects.filter(user=request.user)
-        summary = (
-            transactions
-            .values('category__name', transaction_type=F('type'))
-            .annotate(total=Sum('amount'))
-            .order_by('-total')
+        month = request.query_params.get('month')
+        if not month:
+            return Response(
+                {'detail': 'Missing required month parameter.'},
+                status=400
+            )
+
+        try:
+            month_date = datetime.strptime(month, '%Y-%m')
+        except ValueError:
+            return Response(
+                {'detail': 'Invalid month format. Use YYYY-MM.'},
+                status=400
+            )
+
+        transactions = Transaction.objects.filter(
+            user=request.user,
+            date__year=month_date.year,
+            date__month=month_date.month,
         )
+
+        total_income = transactions.filter(type='income').aggregate(total=Sum('amount'))['total'] or 0
+        total_expenses = transactions.filter(type='expense').aggregate(total=Sum('amount'))['total'] or 0
+        net_balance = total_income - total_expenses
+
         return Response({
             'message': 'Successfully calculated summary',
-            'data': {
-                'user': request.user.username,
-                'summary': summary
-            }
+            'user': request.user.username,
+            'total_income': total_income,
+            'total_expenses': total_expenses,
+            'net_balance': net_balance
         })
 
 
