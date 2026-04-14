@@ -1,9 +1,11 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CategorySerializer, TransactionSerializer
-from .models import Category, Transaction
 from django.db.models import F, Sum
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from .serializers import CategorySerializer, TransactionSerializer
+from .models import Category, Transaction
+from .filters import TransactionFilter
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -21,6 +23,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TransactionFilter
 
     def get_queryset(self):
         return Transaction.objects.filter(
