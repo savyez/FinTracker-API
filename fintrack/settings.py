@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import datetime
+from pathlib import Path
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,6 +28,12 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
+
+# OpenAI API Key
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='', cast=str)
+
+# Gemini API KEY
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='', cast=str)
 
 
 # Application definition
